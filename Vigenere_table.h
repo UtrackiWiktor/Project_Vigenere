@@ -1,0 +1,41 @@
+#pragma once
+#include <cstdlib>
+#include <map>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+class Vigenere_table
+{
+	////////////////////////////////////////////////////////////////////////////
+	// @var 2d array containing vigenere table from file.
+	////////////////////////////////////////////////////////////////////////////
+	char vigenere_table[26][26];
+
+public:
+	Vigenere_table();
+	~Vigenere_table();
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// @function fill_the_table
+	// Function filling the vigenere table conatiner. 
+	// @param table_file (optional) name (location) of the file containing the vigenere table
+	////////////////////////////////////////////////////////////////////////////
+	void fill_the_table(std::string table_file = "vigenere_table.txt");
+
+	////////////////////////////////////////////////////////////////////////////
+	// @function print_table
+	// Prints the whole table to standard output.
+	////////////////////////////////////////////////////////////////////////////
+	void print_table();
+
+	////////////////////////////////////////////////////////////////////////////
+	// @function operator[]
+	// Overloads operator [] to take value from vigenere table.
+	// @param table_file (optional) name (location) of the file containing the vigenere table
+	// @return Returns character under given coordinates or, if coordinates are incorrect returns '#'
+	////////////////////////////////////////////////////////////////////////////
+	char operator[](std::pair<char, char> coord);
+};
+

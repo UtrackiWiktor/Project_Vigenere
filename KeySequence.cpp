@@ -35,7 +35,7 @@ void KeySequence::generate_key_sequence(const Text &plain)
 			key_sequence += (*temp).substr(0, diff);
 
 			///debug
-			std::cout << "\nTest key sequence - length: seq, plain: " << key_sequence.length() << ", " << plain_txt_length;
+			//std::cout << "\nTest key sequence - length: seq, plain: " << key_sequence.length() << ", " << plain_txt_length;
 		}
 		delete(temp);
 	}

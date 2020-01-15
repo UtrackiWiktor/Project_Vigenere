@@ -27,6 +27,8 @@ public:
 	// argument, builds and return the suffix array for the given string 
 	int* build_suffix_array(std::string txt);
 
+	int operator[](const int &x) const;
+
 	void print_suffix_array();
 
 	void set_size(const int &_size);

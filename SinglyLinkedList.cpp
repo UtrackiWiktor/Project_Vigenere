@@ -4,6 +4,7 @@
 
 SinglyLinkedList::SinglyLinkedList()
 {
+	pHead = nullptr;
 }
 
 
@@ -43,4 +44,26 @@ int SinglyLinkedList::count_nodes()
 	}
 
 	return c;
+}
+
+
+int SinglyLinkedList::operator[](const int &x) const
+{
+	if (!pHead)
+		return 0;
+	
+	if (x == 0)
+		return pHead->val;
+
+	int index = 0;
+	auto temp = pHead;
+
+	while (temp->pNext)
+	{
+		temp = temp->pNext;
+		index++;
+		if (x == index)
+			return temp->val;
+	}
+	return 0;
 }

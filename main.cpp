@@ -3,6 +3,7 @@
 #include <string>
 #include "encryption_functions.h"
 #include "decryption_functions.h"
+#include "cryptoanalysis_functions.h"
 #include "debug_functions.h"
 #include "Vigenere_table.h"
 #include "Text.h"
@@ -49,7 +50,17 @@ int main()
 	suff_plain.set_size(plain.return_length());
 	print_suffix_array_with_strings(suff_arr_plain_cpy, plain);
 
+	std::pair<int*, int> prep_suff_and_size = prepare_suffix_array_for_pattern_search(&suff_array, cipher);
+	print_suffix_array_with_strings(prep_suff_and_size.first, prep_suff_and_size.second, cipher);
+
+	std::pair<int*, int> prep_suff_plain = prepare_suffix_array_for_pattern_search(&suff_plain, plain);
+	print_suffix_array_with_strings(prep_suff_plain.first, prep_suff_plain.second, plain);
+
+
+
 	delete(suff_cpy);
+	delete(suff_arr_plain_cpy);
+
 	system("PAUSE");
 	return 0;
 }

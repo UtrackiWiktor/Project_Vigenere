@@ -64,3 +64,9 @@ void SuffixArray::set_size(const int & _size)
 {
 	size = _size;
 }
+
+int SuffixArray::operator[](const int &x) const
+{
+	return suff_array[x];
+}
+

@@ -21,7 +21,7 @@ public:
 
 	void print_to_screen();
 	void print_to_file(std::string file_name);
-	char operator[](int x);
+	char operator[](const int &x) const;
 	void calc_length();
 	int return_length() const;
 	std::string return_text();

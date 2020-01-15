@@ -52,7 +52,7 @@ void Text::print_to_file(std::string file_name)
 {
 }
 
-char Text::operator[](int x)
+char Text::operator[](const int &x) const
 {
 	return text[x];
 }

@@ -3,11 +3,13 @@
 #include <string>
 #include "encryption_functions.h"
 #include "decryption_functions.h"
+#include "debug_functions.h"
 #include "Vigenere_table.h"
 #include "Text.h"
 #include "PlainText.h"
 #include "CipherText.h"
 #include "KeySequence.h"
+#include "SuffixArray.h"
 
 int main()
 {
@@ -37,6 +39,17 @@ int main()
 
 	std::cout << deciphered << std::endl;
 
+	SuffixArray suff_array; //cipher
+	int *suff_cpy = suff_array.build_suffix_array(cipher.return_text());
+	suff_array.set_size(cipher.return_length());
+	print_suffix_array_with_strings(suff_cpy, cipher);
+
+	SuffixArray suff_plain; //plain
+	int *suff_arr_plain_cpy = suff_plain.build_suffix_array(plain.return_text());
+	suff_plain.set_size(plain.return_length());
+	print_suffix_array_with_strings(suff_arr_plain_cpy, plain);
+
+	delete(suff_cpy);
 	system("PAUSE");
 	return 0;
 }

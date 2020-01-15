@@ -62,6 +62,16 @@ void Text::calc_length()
 	length = text.length();
 }
 
+std::string Text::return_text()
+{
+	return text;
+}
+
+std::string Text::substr(const int & beg, const int & count) const
+{
+	return text.std::string::substr(beg, count);
+}
+
 std::ostream& operator<<(std::ostream &os, const Text &obj)
 {
 	os << obj.text;

@@ -10,7 +10,6 @@ public:
 	~CipherText();
 	 
 	void push_front(char &&x);
-	int return_length();
 
 	friend std::ostream& operator<<(std::ostream &os, const Text &obj);
 	//friend void encrypt_txt(PlainText &plain_txt, CipherText &cipher, KeySequence &key, Vigenere_table &vig_tab);

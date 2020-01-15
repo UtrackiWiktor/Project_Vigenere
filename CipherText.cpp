@@ -16,7 +16,7 @@ void CipherText::push_front(char && x)
 	text += x;
  }
 
-int CipherText::return_length()
+int Text::return_length() const
 {
 	return text.length();
 }

@@ -3,6 +3,7 @@
 void decrypt_cipher(PlainText & deciphered, CipherText & cipher, KeySequence &key)
 {
 	cipher.calc_length();
+	deciphered.clear();
 
 	for (int i = 0; i < cipher.return_length(); i++)
 	{
@@ -15,5 +16,6 @@ void decrypt_cipher(PlainText & deciphered, CipherText & cipher, KeySequence &ke
 		else
 			deciphered.push_front(cipher[i]);
 	}
+	deciphered.calc_length();
 }
  

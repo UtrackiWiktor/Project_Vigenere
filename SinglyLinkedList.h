@@ -16,5 +16,7 @@ public:
 	void add_node(const int &value);
 	int count_nodes();
 	int operator[](const int &x) const;
+
+	void delete_list();
 };
 

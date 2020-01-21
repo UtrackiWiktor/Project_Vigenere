@@ -22,7 +22,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="KeySequence">
-    <Position X="9.5" Y="5" Width="2.75" />
+    <Position X="9.5" Y="5" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAEEACAAAEAAAAAAQAAA=</HashCode>
       <FileName>KeySequence.h</FileName>
@@ -46,7 +46,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="SuffixArray">
-    <Position X="12.75" Y="0.75" Width="2.5" />
+    <Position X="13.75" Y="0.75" Width="2.5" />
     <Compartments>
       <Compartment Name="Nested Types" Collapsed="false" />
     </Compartments>

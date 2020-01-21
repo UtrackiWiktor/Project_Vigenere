@@ -1,6 +1,12 @@
 #include "cryptoanalysis_functions.h"
 #include "SinglyLinkedList.h"
+#include "UniqueList.h"
 #include <math.h>
+#include <fstream>
+#include <iomanip>
+
+//no of letters to be checked
+#define _NUMBER_OF_PROB_LETTERS 16
 
 std::pair<int *, int> prepare_suffix_array_for_pattern_search(SuffixArray * suffix_array, const Text & text)
 {
@@ -44,7 +50,7 @@ std::pair<int *, int> prepare_suffix_array_for_pattern_search(SuffixArray * suff
 		ctrl_current_char += text[(*suffix_array)[i] + 1];
 
 		//if digit then ommit
-		if ((ctrl_current_char[0] >= 48 && ctrl_current_char[0] <= 57) || (ctrl_current_char[1] >= 47 && ctrl_current_char[1] <= 57))
+		if ((ctrl_current_char[0] >= 48 && ctrl_current_char[0] <= 57) || (ctrl_current_char[1] >= 48 && ctrl_current_char[1] <= 57))
 		{
 			i++;
 			continue;
@@ -93,25 +99,48 @@ std::pair<int *, int> prepare_suffix_array_for_pattern_search(SuffixArray * suff
 	return std::make_pair(new_array, number_of_suffixes_found);
 }
 
-int * find_key_length(const int * suffix_array, const int &size, CipherText & cipher)
+void find_key_length(std::pair<int*, int> &prep_suffix_array, CipherText & cipher)
 {
-	int *keys = new int[4];
+	kasiski_method(prep_suffix_array, cipher);
 
-
-
-	return keys;
+	return;
 }
 
-void frequency_analysis(const int & key_length, CipherText & cipher, Vigenere_table &vigenere_table)
+void frequency_analysis(const int & key_length, CipherText & cipher, Vigenere_table &vigenere_table, std::string &letter_freq_eng_filename)
 {
+
+
 	std::string *subtexts = new std::string[key_length];
 
-	//divides string into n strings
-	//i is no of substring
+	//opening frequency file and saving content into array
+	std::fstream file(letter_freq_eng_filename, std::ios::in);
+	if (!file.good())
+	{
+		std::cerr << "\nCould not find letters frequency file!\n";
+		return;
+	}
+
+	char plain_txt_letter;
+	double freq;
+	int index = 0;
+	std::pair<char, double> letter_freq_lang[26];
+
+	//takes frequencies from a file and puts it into the array
+	while (file >> plain_txt_letter && file >> freq)
+	{
+		letter_freq_lang[index].first = plain_txt_letter;
+		letter_freq_lang[index].second = (freq /= 100);
+		index++;
+	}
+
+	//// -->	CHI SQUARED METHOD	  <-- ////
+
+	//divides string into n cosets
+	//i is number of substring
 	for (int i = 0; i < key_length; i++)
 	{
 		//j is no of pos in new ciphertext substr
-		for(double j = 0; j <= ceil((cipher.return_length() - 1 - i) / 3) ; j++)
+		for(double j = 0; j <= ceil((cipher.return_length() - 1 - i) / key_length) ; j++)
 		{
 			subtexts[i] += cipher[i + j * key_length];
 		}
@@ -122,86 +151,42 @@ void frequency_analysis(const int & key_length, CipherText & cipher, Vigenere_ta
 	for (int i = 0; i < key_length; i++)
 		letter_frequencies[i] = new double[alphabet.length()];
 
+	//2d array for chi values
+	double **chi_squared_val = new double*[key_length];
 
-	//counting frequencies of letters in substrings
+	for (int i = 0; i < key_length; i++)
+		chi_squared_val[i] = new double[26]{ 0 };
+
+	//loop for each coset
 	for (int i = 0; i < key_length; i++)
 	{
-		for (int j = 0; j < alphabet.length(); j++)
+		//counting frequencies of letters in substrings. 
+		for (int shift = 0; shift < 26; shift++)
 		{
-			//if(static_cast<double>(std::count(subtexts[i].begin(), subtexts[i].end(), alphabet[j])) / (cipher.return_length() / 3))
-			//	std::cout << "txt " << i << ", letter: " << alphabet[j] << ": " << static_cast<double>(std::count(subtexts[i].begin(), subtexts[i].end(), alphabet[j])) / (cipher.return_length()/3) << std::endl;
-			letter_frequencies[i][j] = static_cast<double>(std::count(subtexts[i].begin(), subtexts[i].end(), alphabet[j])) / cipher.return_length();
-			if (letter_frequencies[i][j] != 0)
-				std::cout << "txt " << i << ", letter: " << alphabet[j] << " frequency: " << letter_frequencies[i][j] << std::endl;
+			//std::cout << "coset: " << subtexts[i] << std::endl;
+			for (size_t j = 0; j < alphabet.length(); j++)
+			{
+				//calc frequency
+				letter_frequencies[i][j] = static_cast<double>(std::count(subtexts[i].begin(), subtexts[i].end(), alphabet[j])) / subtexts[i].length();
+				//adding to chi value		
+				//sum:(fi - Fi) / Fi
+				chi_squared_val[i][shift] += pow((letter_frequencies[i][j] - return_frequency_of_a_letter(alphabet[j], *letter_freq_lang)), 2) / return_frequency_of_a_letter(alphabet[j], *letter_freq_lang); // -freq_of that letter in eng squared over freq in eng
+				//std::cout << "i = " << i << ", shift = " << shift << ", chi_squared_value = " << chi_squared_val[i][shift] << std::endl;
+			}
+			shift_coset_left_once(subtexts[i]);
+			
 		}
-		std::cout << "- - - - - - - \n";
 	}
-
-	//pass vigenere table to the funcion!!
-	predict_key(letter_frequencies, key_length, subtexts, vigenere_table, alphabet);
-
+	print_chi_squared_method_results(chi_squared_val, key_length);
 
 	//delete dynamic vars!
-
-
-	////////////////////////////////// <------- INDEX OF COINCIDENCE
-	
-	//double *ioc = new double[key_length]{0};
-	////double ioc[3]{ 0 };
-	//for (int i = 0; i < key_length; i++)
-	//{
-	//	for (int j = 0; j < alphabet.length(); j++)
-	//	{
-	//		//std::cout << "\n ioc[" << i << "] = " << static_cast<double>((letter_frequencies[i][j] * (letter_frequencies[i][j] - 1))) / (cipher.return_length() * (cipher.return_length() - 1)) << std::endl;
-	//		(ioc)[i] += abs(static_cast<double>((letter_frequencies[i][j] * (letter_frequencies[i][j] - 1))) / (cipher.return_length() * (cipher.return_length() - 1)));
-	//	}
-	//}
-
-	////std::cout.precision(5);
-	////print ioc
-	//for (int i = 0; i < key_length; i++)
-	//{
-	//	std::cout << "\nText " << i << ": IoC = " << (ioc)[i] << std::endl;
-	//}
+	delete []subtexts;
+	for (int i = 0; i < key_length; i++)
+		delete(letter_frequencies[i]);
+	delete(letter_frequencies);
 }
 
-void predict_key(double * frequency_ciphertext[], const int & key_length, std::string * subtexts, Vigenere_table & vigenere_table, std::string &alphabet)
-{
-	//array of arrays of 4 most probable key letters in desc order
-	//each instance of parent array for one letter of the key
-	char** probable_key_letters = new char*[key_length];
-	for (int i = 0; i < key_length; i++)
-	{
-		probable_key_letters[i] = new char[4];
-	}
-
-	//array for sorting freqs
-	std::pair<int, double> *temp = new std::pair<int, double>[alphabet.length()];
-
-	//sorting freqs
-	for (int i = 0; i < key_length; i++)
-	{
-		//fill temp
-		for (int j = 0; j < alphabet.length(); j++)
-		{
-			temp[i].first = i;
-			temp[i].second = (*frequency_ciphertext)[i];
-		}
-
-		//sorting small array of current substr
-		sort_frequency_array(temp, alphabet.length());
-
-		for (int j = 0; j < 4; j++)
-		{
-			probable_key_letters[i][j];
-		}
-	}
-
-	//delete dynamic vars!!!
-
-}
-
-void sort_frequency_array(std::pair<int, double> *array, const int &alphabet_length)
+void sort_frequency_array(std::pair<int, double> &array, const int &alphabet_length)
 {
 	std::pair<int, double> temp;
 
@@ -209,12 +194,121 @@ void sort_frequency_array(std::pair<int, double> *array, const int &alphabet_len
 	{
 		for (int j = 0; j < alphabet_length - 1; j++)
 		{
-			if (array[j].second < array[j + 1].second)
+			if ((&array)[j].second < (&array)[j + 1].second)
 			{
-				temp = array[j];
-				array[j] = array[j + 1];
-				array[j + 1] = temp;
+				temp = (&array)[j];
+				(&array)[j] = (&array)[j + 1];
+				(&array)[j + 1] = temp;
 			}
 		}
+	}
+}
+
+char find_key_letter(char & letter_of_ciphertext, char & plain_text_letter, Vigenere_table & vigenere_table)
+{
+	char temp;
+	//for each letter in alphabet chks if x coord is equal to plain txt letter and if it is returns x coord
+	for (int i = 0; i < 26; i++)
+	{
+		temp = vigenere_table[std::make_pair(plain_text_letter, 'A' + i)];
+		if (vigenere_table[std::make_pair(plain_text_letter, 'A' + i)] == letter_of_ciphertext)
+			return 'A' + i;
+	}
+
+	return '#';
+}
+
+void find_divisors(int number, Node **pHead)
+{
+	for (int i = 2; i <= number; i++)
+	{
+		if (number % i == 0)
+			add_unique(i, pHead);
+		if (i == 20)
+			return;
+	}
+}
+
+void kasiski_method(std::pair<int*, int> &prep_suffix_array, const CipherText &cipher)
+{
+	std::string ctrl_group_char,
+		ctrl_current_char;
+
+	//place to put divisors found
+	Node *list = nullptr;
+
+	//flag; 1 if pattern found in current itaration, 0 if not
+	bool pattern = false;
+
+	//group index
+	int group_index;
+
+	for (int i = 0; i < prep_suffix_array.second - 1;)
+	{
+		if (!pattern)
+		{
+			//sets the group ctrl var (takes 2 first letters)
+			ctrl_group_char = cipher[prep_suffix_array.first[i]];
+			ctrl_group_char += cipher[prep_suffix_array.first[i] + 1];
+			group_index = prep_suffix_array.first[i];
+			i++; //incr for current element
+		}
+
+		//setts current character
+		ctrl_current_char = cipher[prep_suffix_array.first[i]];
+		ctrl_current_char += cipher[prep_suffix_array.first[i] + 1];
+
+		//if current elem is part of pattern set pattern flag and find divisors
+		if (ctrl_group_char == ctrl_current_char)
+		{
+			pattern = true;
+			find_divisors(abs(prep_suffix_array.first[i] - group_index), &list);
+			i++;
+		}
+		else
+		{
+			//when it's end of the pattern, remove pattern flag
+			pattern = false;
+		}
+	}
+
+	std::cout << "\nKasiski method key length search results:\n";
+	display_divisors(list);
+}
+
+double return_frequency_of_a_letter(char &letter, std::pair<char, double> &letter_freq_lang)
+{
+	for (int i = 0; i < 26; i++)
+	{
+		if ((&letter_freq_lang)[i].first == letter)
+			return (&letter_freq_lang)[i].second;
+	}
+
+	return -1.0;
+}
+
+void shift_coset_left_once(std::string &coset)
+{
+	for (int i = 0; i < coset.length(); i++)
+	{
+		coset[i] = coset[i] - 1 < 'A' ? coset[i] + 25 : coset[i] - 1;
+	}
+}
+
+void print_chi_squared_method_results(double **chi_squared_val, const int &key_length)
+{
+	std::string alph = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	std::cout << "\nResults of chi squared method analysis:\n\n";
+	std::cout << "Letter" << " |  Each collumn is one coset of the ciphertext\n";
+	std::cout << "----------------------------------------------------------\n";
+	for (int i = 0; i < 26; i++)
+	{
+		std::cout << "   " << alph[i] << "   |";
+		for (int j = 0; j < key_length; j++)
+		{
+			std::cout << std::setprecision(5) << std::setw(9) << chi_squared_val[j][i];
+		}
+		std::cout << std::endl;
 	}
 }

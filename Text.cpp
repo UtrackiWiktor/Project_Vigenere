@@ -27,11 +27,11 @@ Text::Text(const std::string & _file_name)
 			continue;
 		}
 		//if 0-9
-		if (buff >= 48 && buff <= 57)
+		/*if (buff >= 48 && buff <= 57)
 		{
 			text += buff;
 			continue;
-		}
+		}*/
 		//else discard
 	}
 	file.close();
@@ -50,6 +50,10 @@ void Text::print_to_screen()
 
 void Text::print_to_file(std::string file_name)
 {
+	std::fstream output_file(file_name, std::ios::out);
+	if (!output_file.good())
+		std::cout << "\noutput file error.\n";
+	output_file << text;
 }
 
 char Text::operator[](const int &x) const

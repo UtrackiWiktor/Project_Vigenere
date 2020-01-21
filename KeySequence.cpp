@@ -41,6 +41,15 @@ void KeySequence::generate_key_sequence(const Text &plain)
 	}
 }
 
+void KeySequence::change_key(std::string & key)
+{
+	text = "";
+	for (int i = 0; i < key.length(); i++)
+	{
+		text += toupper(key[i]);
+	}
+}
+
 std::string KeySequence::return_key_sequence()
 {
 	return key_sequence;

@@ -25,4 +25,10 @@ void PlainText::mod_at(int & pos, char val)
 {
 	text[pos] = val;
 }
+
+void PlainText::clear()
+{
+	text = "";
+	length = 0;
+}
  

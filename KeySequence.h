@@ -12,6 +12,7 @@ public:
 	~KeySequence();
 
 	void generate_key_sequence(const Text &plain);
+	void change_key(std::string &key);
 	std::string return_key_sequence();
 
 	char operator[](int x);

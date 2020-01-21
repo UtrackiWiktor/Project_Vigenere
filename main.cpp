@@ -12,7 +12,7 @@
 #include "KeySequence.h"
 #include "SuffixArray.h"
 
-int main()
+int main(int argc, char **argv)
 {
 	Vigenere_table vigenere_table;
 	vigenere_table.fill_the_table();
@@ -21,47 +21,57 @@ int main()
 
 	std::string plain_txt_file = "test_file_plain.txt";
 	std::string key_file = "key_file.txt";
+	std::string letters_freq_file = "eng_letters_frequency.txt";
 
 	PlainText plain(plain_txt_file);
 	std::cout << std::endl << plain << std::endl;
 
 	KeySequence key(key_file);
 	key.generate_key_sequence(plain);
-	std::cout << key << std::endl << key.return_key_sequence() << std::endl;
+	//std::cout << key << std::endl << key.return_key_sequence() << std::endl;
 
 	CipherText cipher;
 	 
 	encrypt_plain_text(plain, cipher, key, vigenere_table);
 	cipher.calc_length();
-	std::cout << cipher << std::endl;
+	std::cout << std::endl << cipher << std::endl;
+	cipher.print_to_file("cipher_out.txt");
 
 	PlainText deciphered;
 	decrypt_cipher(deciphered, cipher, key);
 
-	std::cout << deciphered << std::endl;
+	//std::cout << deciphered << std::endl;
 
 	SuffixArray suff_array; //cipher
 	int *suff_cpy = suff_array.build_suffix_array(cipher.return_text());
 	suff_array.set_size(cipher.return_length());
 	//print_suffix_array_with_strings(suff_cpy, cipher);
 
-	SuffixArray suff_plain; //plain
-	int *suff_arr_plain_cpy = suff_plain.build_suffix_array(plain.return_text());
-	suff_plain.set_size(plain.return_length());
-	//print_suffix_array_with_strings(suff_arr_plain_cpy, plain);
-
 	std::pair<int*, int> prep_suff_and_size = prepare_suffix_array_for_pattern_search(&suff_array, cipher);
 	print_suffix_array_with_strings(prep_suff_and_size.first, prep_suff_and_size.second, cipher);
 
-	std::pair<int*, int> prep_suff_plain = prepare_suffix_array_for_pattern_search(&suff_plain, plain);
-	//print_suffix_array_with_strings(prep_suff_plain.first, prep_suff_plain.second, plain);
 
 	std::cout << std::endl;
 
-	frequency_analysis(3, cipher);
+	find_key_length(prep_suff_and_size, cipher);
+
+	int chosen_key_length = 0;
+	std::cout << "\nWhat key length do you think is the most probable?\n";
+	std::cin >> chosen_key_length;
+
+	frequency_analysis(chosen_key_length, cipher, vigenere_table, letters_freq_file);
+
+	std::cout << "\nWhat do you think the key is?\n";
+	std::string chosen_key;
+	std::cin >> chosen_key;
+	KeySequence chosen_key_sequence;
+	chosen_key_sequence.change_key(chosen_key);
+	chosen_key_sequence.generate_key_sequence(cipher);
+
+	decrypt_cipher(deciphered, cipher, chosen_key_sequence);
+	std::cout << deciphered;
 
 	delete(suff_cpy);
-	delete(suff_arr_plain_cpy);
 
 	system("PAUSE");
 	return 0;

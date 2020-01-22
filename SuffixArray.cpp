@@ -10,6 +10,7 @@ SuffixArray::SuffixArray()
 
 SuffixArray::~SuffixArray()
 {
+	delete[] suff_array;
 }
 
 bool comp(const SuffixArray::suffix &a, const SuffixArray::suffix &b)
@@ -17,14 +18,13 @@ bool comp(const SuffixArray::suffix &a, const SuffixArray::suffix &b)
 	return a.suff < b.suff ? true : false;
 }
 
-// This is the main function that takes a string 'txt' of size n as an 
+// This is the main function that takes a string txt of size n as an 
 // argument, builds and return the suffix array for the given string 
 int* SuffixArray::build_suffix_array(std::string txt)
 {
-	// A structure to store suffixes and their indexes
 	int txt_length = txt.length();
 	
-	//suffix suffixes[txt_length];
+	//structes that stores suffixes and indexes;
 	suffix *suffixes = new suffix[txt_length];
 	
 	// Store suffixes and their indexes in an array of structures. 

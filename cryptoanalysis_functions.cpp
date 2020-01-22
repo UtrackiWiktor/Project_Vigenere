@@ -6,7 +6,7 @@
 #include <iomanip>
 
 //no of letters to be checked
-#define _NUMBER_OF_PROB_LETTERS 16
+//#define _NUMBER_OF_PROB_LETTERS 16
 
 std::pair<int *, int> prepare_suffix_array_for_pattern_search(SuffixArray * suffix_array, const Text & text)
 {
@@ -108,8 +108,6 @@ void find_key_length(std::pair<int*, int> &prep_suffix_array, CipherText & ciphe
 
 void frequency_analysis(const int & key_length, CipherText & cipher, Vigenere_table &vigenere_table, std::string &letter_freq_eng_filename)
 {
-
-
 	std::string *subtexts = new std::string[key_length];
 
 	//opening frequency file and saving content into array
@@ -182,8 +180,8 @@ void frequency_analysis(const int & key_length, CipherText & cipher, Vigenere_ta
 	//delete dynamic vars!
 	delete []subtexts;
 	for (int i = 0; i < key_length; i++)
-		delete(letter_frequencies[i]);
-	delete(letter_frequencies);
+		delete[](letter_frequencies[i]);
+	delete[](letter_frequencies);
 }
 
 void sort_frequency_array(std::pair<int, double> &array, const int &alphabet_length)

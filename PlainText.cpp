@@ -31,4 +31,9 @@ void PlainText::clear()
 	text = "";
 	length = 0;
 }
+
+std::string PlainText::return_class_name()
+{
+	return std::string("PlainText");
+}
  

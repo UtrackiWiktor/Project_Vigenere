@@ -222,7 +222,7 @@ void find_divisors(int number, Node **pHead)
 	{
 		if (number % i == 0)
 			add_unique(i, pHead);
-		if (i == 20)
+		if (i == 25)
 			return;
 	}
 }

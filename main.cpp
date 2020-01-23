@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 		SuffixArray suff_array; //cipher
 		int *suff_cpy = suff_array.build_suffix_array(cipher_in.return_text());
 		suff_array.set_size(cipher_in.return_length());
-		//print_suffix_array_with_strings(suff_cpy, cipher);
+		//print_suffix_array_with_strings(suff_cpy, cipher_in);
 
 		std::pair<int*, int> prep_suff_and_size = prepare_suffix_array_for_pattern_search(&suff_array, cipher_in);
 		if(prep_suff_and_size.second < 35)
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 				std::cout << "\nOutput file not found! Name: \n" << cipher_output << std::endl;
 				return 0;
 			}
-			file_co << deciphered << std::endl << "Key: " << chosen_key_sequence;
+			file_co << deciphered << "\nClass name: " << deciphered.return_class_name() << std::endl << "Key: " << chosen_key_sequence << "\nClass name: " << chosen_key_sequence.return_class_name();
 		}
 
 

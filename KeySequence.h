@@ -14,6 +14,7 @@ public:
 	void generate_key_sequence(const Text &plain);
 	void change_key(std::string &key);
 	std::string return_key_sequence();
+	std::string return_class_name();
 
 	char operator[](int x);
 

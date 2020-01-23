@@ -55,6 +55,11 @@ std::string KeySequence::return_key_sequence()
 	return key_sequence;
 }
 
+std::string KeySequence::return_class_name()
+{
+	return std::string("KeySequence");
+}
+
 char KeySequence::operator[](int x)
 {
 	return key_sequence[x];

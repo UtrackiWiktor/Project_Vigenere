@@ -25,6 +25,7 @@ public:
 	void calc_length();
 	int return_length() const;
 	std::string return_text();
+	virtual std::string return_class_name();
 
 	friend std::ostream& operator<<(std::ostream &os, const Text &obj);
 

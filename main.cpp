@@ -1,113 +1,166 @@
-#include <cstdlib>
-#include <iostream>
+/*
+ *	Copyright Bart³omiej Piura & Pawe³ Szafraniec 2020
+ */
 #include <string>
-#include "encryption_functions.h"
-#include "decryption_functions.h"
-#include "cryptoanalysis_functions.h"
-#include "debug_functions.h"
-#include "Vigenere_table.h"
-#include "Text.h"
-#include "PlainText.h"
-#include "CipherText.h"
-#include "KeySequence.h"
-#include "SuffixArray.h"
-#include "input_switches_handling.h"
+#include <vector>
+#include <iostream>
 
-int main(int argc, char **argv)
+ /*
+	 Make something that such that class will be polymorphic.
+ */
+class Component {
+public:
+	virtual void write_message(const std::string& message)
+	{
+		std::cout << "Class name: " << typeid(*this).name() << "\nMessage: " << message << std::endl;
+	}
+};
+
+/*
+	Make something that such that class will be polymorphic.
+*/
+class Describable {
+public:
+	virtual void write_message(const std::string& message)
+	{
+		std::cout << "Class name: " << typeid(*this).name() << "\nMessage: " << message << std::endl;
+	}
+};
+
+class Writer : public Component, public Describable {
+public:
+
+	/*
+	Should write given message to console. Name of this class should also be written, but it can't be hardcoded (use RTTI).
+	*/
+	virtual void write_message(const std::string& message)
+	{
+		std::cout << "Class name: " << typeid(*this).name() << "\nMessage: " << message << std::endl;
+	}
+};
+
+class WriterWithHistory : public Writer, public Describable {
+public:
+
+	/*
+		Call 'write_message' from Writer class, and store given message. (Some extra fields should be added)
+	*/
+	std::vector<std::string> mssgs;
+
+	void write_message(const std::string& message)
+	{
+		std::cout << "Class name: " << typeid(*this).name() << "\nMessage: " << message << std::endl;
+		mssgs.push_back(message);
+	}
+
+	/*
+		Return all stored messages.
+	*/
+	const std::vector<std::string>& get_messages()
+	{
+		return mssgs;
+	}
+};
+
+/*
+	Pring history of the given writer. If it hasn't history, inform user about it.
+*/
+void printHistory(Writer* w)
 {
-	std::string plain_txt_file = "";
-	std::string key_file = "";
-	std::string cipher_input_file;
-	std::string cipher_output = "";
-	std::string decryption_output = "";
-
-	//file is constant and not meant to be changed
-	std::string letters_freq_file = "eng_letters_frequency.txt";
-
-	if (!input_switches(argc, argv, plain_txt_file, key_file, cipher_input_file, cipher_output, decryption_output))
-		return 0;
-
-
-	Vigenere_table vigenere_table;
-	vigenere_table.fill_the_table();
-	vigenere_table.print_table();
-
-	if (plain_txt_file != "" && key_file != "")
+	if (auto temp = dynamic_cast<WriterWithHistory*>(w))
 	{
-		PlainText plain(plain_txt_file);
-		std::cout << std::endl << plain << std::endl;
+		std::cout << "Messages:\n";
 
-		KeySequence key(key_file);
-		key.generate_key_sequence(plain);
-		//std::cout << key << std::endl << key.return_key_sequence() << std::endl;
-		CipherText cipher;
-
-		encrypt_plain_text(plain, cipher, key, vigenere_table);
-		cipher.calc_length();
-		std::cout << std::endl << cipher << std::endl;
-		
-		if(cipher_output != "")
-			cipher.print_to_file(cipher_output);
-
-		//PlainText deciphered;
-		//decrypt_cipher(deciphered, cipher, key);
-	}
-	else if(cipher_input_file != "")
-	{
-		CipherText cipher_in(cipher_input_file);
-		cipher_in.calc_length();
-
-		SuffixArray suff_array; //cipher
-		int *suff_cpy = suff_array.build_suffix_array(cipher_in.return_text());
-		suff_array.set_size(cipher_in.return_length());
-		//print_suffix_array_with_strings(suff_cpy, cipher_in);
-
-		std::pair<int*, int> prep_suff_and_size = prepare_suffix_array_for_pattern_search(&suff_array, cipher_in);
-		if(prep_suff_and_size.second < 35)
-			print_suffix_array_with_strings(prep_suff_and_size.first, prep_suff_and_size.second, cipher_in);
-
-
-		std::cout << std::endl;
-
-		find_key_length(prep_suff_and_size, cipher_in);
-
-		int chosen_key_length = 0;
-		std::cout << "\nWhat key length do you think is the most probable?\n";
-		std::cin >> chosen_key_length;
-
-		frequency_analysis(chosen_key_length, cipher_in, vigenere_table, letters_freq_file);
-
-		std::cout << "\nWhat do you think the key is?\n";
-		std::string chosen_key;
-		std::cin >> chosen_key;
-
-		KeySequence chosen_key_sequence;
-		chosen_key_sequence.change_key(chosen_key);
-		chosen_key_sequence.generate_key_sequence(cipher_in);
-
-		PlainText deciphered;
-
-		decrypt_cipher(deciphered, cipher_in, chosen_key_sequence);
-		std::cout << deciphered;
-
-		if (decryption_output != "")
+		for (const auto i : temp->get_messages())
 		{
-			std::fstream file_co(decryption_output, std::ios::out | std::ios::trunc);
-			if (!file_co.good())
-			{
-				std::cout << "\nOutput file not found! Name: \n" << cipher_output << std::endl;
-				return 0;
-			}
-			file_co << deciphered << "\nClass name: " << deciphered.return_class_name() << std::endl << "Key: " << chosen_key_sequence << "\nClass name: " << chosen_key_sequence.return_class_name();
+			std::cout << i << std::endl;
 		}
-
-
-		delete[] suff_cpy;
+		return;
 	}
-	else
+
+	std::cout << "No messages to print!\n";
+	return;
+}
+
+
+class Logger {
+public:
+	/*
+		Store somewhere name of the type of the given component.
+	*/
+	std::string component_name;
+
+	Logger(Component* o) : component_name(typeid(o).name())
 	{
-		std::cout << "Incorrect file names\n";
+
 	}
+
+	/*
+		Print give message and stored type name.
+	*/
+	void print(std::string m)
+	{
+		std::cout << "Message: " << m << "\nTypename: " << component_name << std::endl;
+	}
+};
+
+/*
+	1. Create object of Component, Writer and WriterWithHistory.
+	2. Call write_message on Writer and WriterWithHistory few times with different messages.
+	3. Pass both writers to printHistory function. What happened?
+	4. Create logger for each of created objects.
+	5. Call print function for each created logger.
+	6. Using dynamic_cast cast a pointer of WriterWithHistory to Component pointer
+		and Describable pointer. Write to the console values of both pointers. What is the result? Why?
+*/
+int main()
+{
+	Component comp;
+	Writer writ;
+	WriterWithHistory writhist;
+	std::cout << "Firsty task:\n";
+	comp.write_message("This is a comp message.");
+	std::cout << std::endl;
+	writ.write_message("This is a writ message.");
+	std::cout << std::endl;
+	writhist.write_message("This is a writhist message.");
+	std::cout << std::endl;
+
+	std::cout << "\nSecond task:\n";
+	writ.write_message("This is a second writ message.");
+	std::cout << std::endl;
+	writ.write_message("This is a third writ message.");
+	std::cout << std::endl;
+	writ.write_message("This is a fourth writ message. And the last of them");
+	std::cout << std::endl;
+
+	writhist.write_message("This is a second writ message.");
+	std::cout << std::endl;
+	writhist.write_message("This is a third writ message.");
+	std::cout << std::endl;
+	writhist.write_message("This is a fourth writ message. And the last of them");
+	std::cout << std::endl;
+
+	std::cout << "\nThird task:\n";
+	std::cout << "Write messages:\n";
+	printHistory(&writ);
+	std::cout << "\nWritehist messages:\n";
+	printHistory(&writhist);
+
+	std::cout << "\nFourth task:\n";
+	Logger log_writ(&writ);
+	Logger log_writhist(&writhist);
+	Logger log_comp(&comp);
+
+	std::cout << "\nFifth task:\n";
+	log_comp.print("logger comp");
+	log_writ.print("logger writ");
+	log_writhist.print("logger writhist");
+
+	std::cout << "\nSixth task:\n";
+	auto p_writhist_comp = dynamic_cast<Component*>(&writhist);
+	auto p_hist_desc = dynamic_cast<Describable*>(&writhist);
+	std::cout << "Pionter comp: " << p_writhist_comp << "\nPointer desc: " << p_hist_desc << std::endl;
 
 	system("PAUSE");
 	return 0;
